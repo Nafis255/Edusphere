@@ -6,16 +6,14 @@ import { Button } from '@/components/ui/Button';
 import { Mail, CheckCircle, Briefcase, Calendar, Upload, Edit } from 'lucide-react';
 import { 
   mockStudentUser, 
-  mockDosen, // <-- 1. Impor data Dosen
+  mockDosen, 
   mockCourses, 
   mockBookRecommendations 
 } from '@/data/mockData';
 import Link from 'next/link';
-import { useRole } from '@/contexts/RoleContext'; // <-- 2. Impor hook role
+import { useRole } from '@/contexts/RoleContext'; 
 
-// Komponen 'EnrolledCourseItem' tetap sama...
 function EnrolledCourseItem({ course }: { course: typeof mockCourses[0] }) {
-  // ... (kode komponen ini tidak berubah) ...
   return (
     <Card className="shadow-sm">
       <CardContent className="p-4">
@@ -35,12 +33,10 @@ function EnrolledCourseItem({ course }: { course: typeof mockCourses[0] }) {
 
 // Halaman utama /profile
 export default function ProfilePage() {
-  const { role } = useRole(); // <-- 3. Dapatkan role saat ini
+  const { role } = useRole(); 
 
-  // 4. Tentukan user mana yang akan ditampilkan datanya
   const user = role === 'dosen' ? mockDosen : mockStudentUser;
   
-  // 5. Label dinamis berdasarkan role
   const idLabel = user.role === 'Dosen' ? 'NIDN/NIDK' : 'NIM';
   const coursesTitle = user.role === 'Dosen' ? 'Mata Kuliah Diampu' : 'Enrolled Courses';
   const coursesLabel = user.role === 'Dosen' ? 'Mengampu' : 'Enrolled';
@@ -57,7 +53,7 @@ export default function ProfilePage() {
             <CardContent className="p-6">
               <div className="relative w-32 h-32 mx-auto">
                 <img 
-                  src={user.avatarUrl} // <-- Dinamis
+                  src={user.avatarUrl} 
                   alt={user.name}
                   className="w-32 h-32 rounded-full mx-auto object-cover"
                   onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/128x128/E2E8F0/A0AEC0?text=${user.name.charAt(0)}`; }}
@@ -79,7 +75,7 @@ export default function ProfilePage() {
               </div>
               <div className="flex items-center justify-center text-sm text-gray-600">
                 <Briefcase className="h-4 w-4 mr-2" />
-                {mockCourses.length} {coursesLabel} {/* <-- Dinamis */}
+                {mockCourses.length} {coursesLabel} 
               </div>
               <div className="flex items-center justify-center text-sm text-green-600">
                 <CheckCircle className="h-4 w-4 mr-2" />
@@ -113,7 +109,7 @@ export default function ProfilePage() {
                 <p className="p-2 bg-gray-100 rounded-md mt-1">{user.role}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">{idLabel}</label> {/* <-- Dinamis */}
+                <label className="text-sm font-medium text-gray-500">{idLabel}</label> 
                 <p className="p-2 bg-gray-100 rounded-md mt-1">{user.academicId}</p>
               </div>
               <div className="md:col-span-2 ">

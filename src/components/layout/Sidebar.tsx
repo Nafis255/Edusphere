@@ -1,4 +1,4 @@
-"use client";  // Perlu 'use client' karena ada hook
+"use client";  
 
 import React from 'react';
 import Link from 'next/link';

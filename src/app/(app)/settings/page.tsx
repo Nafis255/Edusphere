@@ -4,12 +4,11 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Switch } from '@/components/ui/Switch';
-import { Input } from '@/components/ui/Input'; // <-- Impor Input
+import { Input } from '@/components/ui/Input'; 
 import { useTheme } from '@/contexts/ThemeContext';
 import { useRole } from '@/contexts/RoleContext';
-import { Bell, Palette, Globe, Shield, Settings2 } from 'lucide-react'; // <-- Impor ikon baru
+import { Bell, Palette, Globe, Shield, Settings2 } from 'lucide-react'; 
 
-// Komponen helper (tetap sama)
 function SettingsRow({ title, description, children }: { title: string, description: string, children: React.ReactNode }) {
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between space-y-2 md:space-y-0 border-b border-gray-200 py-4 last:border-b-0">
@@ -158,7 +157,7 @@ export default function SettingsPage() {
         </Card>
       )}
       
-      {/* 3. Pengaturan Bahasa & Privasi (Tetap Sama) */}
+      {/* 3. Pengaturan Bahasa & Privasi */}
       <Card className="shadow-md">
         <CardHeader className="flex flex-row items-center space-x-3">
           <Globe className="h-6 w-6 text-orange-500" />

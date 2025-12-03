@@ -4,24 +4,20 @@ import React from 'react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/Card';
 import { MessageSquare, ThumbsUp } from 'lucide-react';
-import { ForumThread } from '@/lib/types'; // Impor tipe datanya
+import { ForumThread } from '@/lib/types'; 
 
 interface ThreadRowProps {
-  courseId: string | null; // Buat courseId opsional untuk forum global
+  courseId: string | null; 
   thread: ForumThread;
 }
 
 export default function ThreadRow({ courseId, thread }: ThreadRowProps) {
   const { author, title, content, repliesCount, likesCount, createdAt } = thread;
 
-  // Tentukan link. Jika tidak ada courseId (global), link bisa beda
-  // Untuk sekarang, kita asumsikan semua thread tetap butuh courseId
-  // (Logika ini perlu disempurnakan jika ada thread global)
   const linkHref = courseId 
     ? `/courses/${courseId}/forum/${thread.id}` 
-    : `/forum/${thread.id}`; // Asumsi link global (bisa diubah)
+    : `/forum/${thread.id}`; 
   
-  // Untuk demo, kita hardcode courseId jika tidak ada
   const finalLink = `/courses/${courseId || 'web-lanjut'}/forum/${thread.id}`;
 
 

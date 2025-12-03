@@ -44,7 +44,6 @@ export default function GlobalForumPage() {
       <div className="space-y-4">
         {allThreads.length > 0 ? (
           allThreads.map(thread => (
-            // Kita berikan 'web-lanjut' sebagai courseId default (limitasi mock data)
             <ThreadRow key={thread.id} courseId="web-lanjut" thread={thread} />
           ))
         ) : (

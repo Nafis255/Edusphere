@@ -1,13 +1,13 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import SimpleBarChart from '@/components/charts/SimpleBarChart';
-import { mockGlobalAnalytics, mockAnalyticsStats } from '@/data/mockData'; // <-- 1. Impor data baru
-import StatCard from '@/components/dashboard/StatCard'; // <-- 2. Impor StatCard
-import { Award, Target, Clock, PieChart } from 'lucide-react'; // <-- 3. Impor ikon
+import { mockGlobalAnalytics, mockAnalyticsStats } from '@/data/mockData'; 
+import StatCard from '@/components/dashboard/StatCard'; 
+import { Award, Target, Clock, PieChart } from 'lucide-react'; 
 
 export default function AnalyticsPage() {
   const { courseProgressData, quizScoreData, studyTimeData } = mockGlobalAnalytics;
-  const stats = mockAnalyticsStats; // <-- 4. Ambil data stats
+  const stats = mockAnalyticsStats; 
 
   const formattedStudyTimeData = studyTimeData.map(d => ({ name: d.day, Waktu: d.hours }));
 
@@ -20,7 +20,6 @@ export default function AnalyticsPage() {
         Ringkasan progres belajar Anda secara keseluruhan.
       </p>
 
-      {/* 5. TAMBAHKAN GRID STAT CARD DI SINI */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
           title="Completed Courses" 
@@ -36,19 +35,18 @@ export default function AnalyticsPage() {
         />
         <StatCard 
           title="Total Study Hours" 
-          value={`${stats.totalStudyHours}h`} // Tambah 'h'
+          value={`${stats.totalStudyHours}h`} 
           icon={Clock} 
           color="text-cyan-500"
         />
         <StatCard 
           title="Average Progress" 
-          value={`${stats.averageProgress}%`} // Tambah '%'
+          value={`${stats.averageProgress}%`} 
           icon={PieChart} 
           color="text-purple-500"
         />
       </div>
 
-      {/* Grid untuk chart (tetap ada) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Chart 1: Progres Mata Kuliah */}
         <Card className="shadow-md">

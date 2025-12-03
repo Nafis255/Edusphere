@@ -10,12 +10,11 @@ import { Select } from '@/components/ui/Select';
 import { useRole } from '@/contexts/RoleContext'; // <-- 1. Impor hook role
 
 // --- KARTU UNTUK MAHASISWA ---
-// (Ini adalah 'CourseCard' kita yang lama, di-rename)
 function StudentCourseCard({ course }: { course: Course }) {
   return (
     <Card className="shadow-sm hover:shadow-md overflow-hidden flex flex-col">
       <img
-        src={course.coverImage} // Ganti ke coverImage agar konsisten
+        src={course.coverImage} 
         alt={course.title}
         className="w-full h-40 object-cover"
         onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/300x160/E2E8F0/A0AEC0?text=IMG'; }}
@@ -88,7 +87,7 @@ export default function CoursesPage() {
       
       <div className="flex flex-col md:flex-row justify-between md:items-center space-y-4 md:space-y-0">
         <h1 className="text-3xl font-bold text-gray-900">
-          {pageTitle} {/* <-- Judul dinamis */}
+          {pageTitle} 
         </h1>
         
         <Select>

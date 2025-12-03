@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Book, Users, FileText, ClipboardCheck, Activity } from 'lucide-react';
 import { mockDosenStats, mockDosenActivity } from '@/data/mockData';
-import StatCard from '@/components/dashboard/StatCard'; // Kita gunakan ulang StatCard
+import StatCard from '@/components/dashboard/StatCard'; 
 import Link from 'next/link';
 import { Button } from '../ui/Button';
 

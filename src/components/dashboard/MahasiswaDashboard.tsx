@@ -1,10 +1,8 @@
 import React from 'react';
-import { Book, Award, Clock, BarChart2 } from 'lucide-react'; // Ikon untuk StatCard
-
-// Impor komponen dashboard
+import { Book, Award, Clock, BarChart2 } from 'lucide-react'; 
 import StatCard from '@/components/dashboard/StatCard';
 import CourseProgressCard from '@/components/dashboard/CourseProgressCard';
-import InfoCard from '@/components/dashboard/InfoCard'; // Tetap diimpor
+import InfoCard from '@/components/dashboard/InfoCard'; 
 
 // Impor data dummy
 import { 
@@ -61,8 +59,8 @@ export default function DashboardPage() {
       {/* Grid Konten Utama (Kursus & Info) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Kolom Kiri: Lanjutkan Belajar (Ini tetap 2 kolom di layar besar) */}
-        <div className="lg:col-span-3 space-y-6"> {/* UBAH INI: lg:col-span-2 menjadi lg:col-span-3 */}
+        {/* Kolom Kiri: Lanjutkan Belajar */}
+        <div className="lg:col-span-3 space-y-6"> 
           <h2 className="text-2xl font-semibold text-gray-900">Recently Accessed</h2>
           {mockCourses.map((course) => (
             <CourseProgressCard key={course.id} course={course} />
@@ -71,7 +69,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Bagian Baru: Upcoming Deadlines & Recent Achievements di bawah */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6"> {/* Tambahkan grid baru di sini */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6"> 
         <InfoCard 
           title="Upcoming Deadlines" 
           items={mockUpcomingDeadlines} 
@@ -81,8 +79,6 @@ export default function DashboardPage() {
           items={mockRecentAchievements} 
         />
       </div>
-
-      {/* Nanti kita tambahkan chart analitik di sini */}
 
     </div>
   );
