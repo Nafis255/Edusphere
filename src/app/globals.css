@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+:root {
+ --background: #f3f6f8;
+ --foreground: #171717;
+}
+
+@theme inline {
+ --color-background: var(--background);
+ --color-foreground: var(--foreground);
+ --font-sans: var(--font-geist-sans);
+ --font-mono: var(--font-geist-mono);
+}
+
+/* --- PERUBAHAN DI SINI ---
+  Blok '@media' Anda diganti dengan '.dark:root'.
+  Ini membuat CSS mendengarkan class '.dark' yang diatur oleh
+  ThemeContext, bukan lagi pengaturan OS.
+*/
+.dark:root {
+ --background: #0a0a0a;
+ --foreground: #ededed;
+}
+
+body {
+ background: var(--background);
+ color: var(--foreground);
+ font-family: Arial, Helvetica, sans-serif;
+}
+
+/* PENTING: Tambahkan ini kembali dari kode kita sebelumnya.
+  Ini dibutuhkan untuk gradien tombol dan progress bar.
+*/
+@layer utilities {
+  .gradient-primary {
+    @apply bg-gradient-to-r from-blue-500 to-cyan-400;
+  }
+  .gradient-primary-hover {
+    @apply bg-gradient-to-r from-blue-600 to-cyan-500;
+  }
+}
