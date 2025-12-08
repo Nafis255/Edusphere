@@ -1,113 +1,202 @@
-"use client"; 
+"use client";
 
-import React from 'react';
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import React, { useEffect, useState, useTransition } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { 
-  PlayCircle, 
-  FileText, 
-  Calendar, 
-  Presentation,
-  TextIcon,
-  Plus,
-  Edit2,
-  Trash2
-} from 'lucide-react';
-import { mockCourses } from '@/data/mockData';
-import { Material } from '@/lib/types';
+import { Input } from '@/components/ui/Input';
+import { AlertCircle, Save, Loader2, Trash2 } from 'lucide-react';
+import { getCourseById, updateCourse, deleteCourse } from '@/actions/course-actions';
+import { ConfirmModal } from '@/components/ui/ConfirmModal'; // <-- 1. Import Modal
+import { toast } from 'sonner';
 
-// (Helper format tanggal)
-function formatDate(dateString: string) {
-  try {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  } catch (e) {
-    return dateString;
-  }
-}
-
-// Komponen item materi versi Dosen (dengan tombol edit/hapus)
-function EditableMaterialItem({ material }: { material: Material }) {
-  
-  const getIcon = () => {
-    switch (material.type) {
-      case 'Video': return <PlayCircle className="h-5 w-5 text-blue-400" />;
-      case 'PDF': return <FileText className="h-5 w-5 text-red-400" />;
-      case 'PPT': return <Presentation className="h-5 w-5 text-orange-400" />;
-      case 'Word': return <FileText className="h-5 w-5 text-blue-500" />;
-      case 'Text': return <TextIcon className="h-5 w-5 text-gray-400" />;
-      default: return <FileText className="h-5 w-5 text-gray-400" />;
-    }
-  };
-  const icon = getIcon();
-
-  return (
-    <div className="block py-4 px-2 rounded-lg">
-      <div className="flex items-center justify-between">
-        {/* Info Materi */}
-        <div className="flex items-center space-x-3">
-          {icon}
-          <div>
-            <p className="font-semibold text-gray-900">{material.title}</p>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500 mt-1">
-              <span>{material.type}</span>
-              <span className="flex items-center">
-                <Calendar className="h-4 w-4 mr-1" />
-                {formatDate(material.uploadedAt)}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Tombol Aksi Dosen (UI Only) */}
-        <div className="flex space-x-2">
-          <Button variant="ghost" size="icon" className="text-blue-600 hover:bg-blue-100">
-            <Edit2 className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="text-red-600 hover:bg-red-100">
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Halaman utama /manage/[courseId]/materi
-export default function ManageMateriPage() {
+export default function ManageSettingsPage() {
   const params = useParams();
   const courseId = params.courseId as string;
-  const course = mockCourses.find(c => c.id === courseId);
+  const router = useRouter();
 
-  if (!course) return <div>Mata Kuliah tidak ditemukan.</div>;
+  const [loading, setLoading] = useState(true);
+  const [isPending, startTransition] = useTransition();
+  
+  // State untuk Modal Delete
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // State Form
+  const [formData, setFormData] = useState({
+      title: "",
+      semester: "",
+      enrollmentKey: "",
+      description: "",
+      coverImage: ""
+  });
+
+  // Load Data
+  useEffect(() => {
+    async function loadData() {
+        const data = await getCourseById(courseId);
+        if (data) {
+            setFormData({
+                title: data.title,
+                semester: data.semester || "",
+                enrollmentKey: data.enrollmentKey || "",
+                description: data.description || "",
+                coverImage: data.coverImage || ""
+            });
+        }
+        setLoading(false);
+    }
+    loadData();
+  }, [courseId]);
+
+  // Handle Update (Simpan Perubahan)
+  const handleSave = () => {
+      startTransition(async () => {
+          const form = new FormData();
+          form.append("title", formData.title);
+          form.append("semester", formData.semester);
+          form.append("enrollmentKey", formData.enrollmentKey);
+          form.append("description", formData.description);
+          form.append("coverImage", formData.coverImage);
+
+          const res = await updateCourse(courseId, form);
+          if (res.success) {
+            toast.success("Pengaturan berhasil disimpan!");
+            router.refresh();
+          } else {
+            toast.error(res.error || "Gagal menyimpan.");
+          }
+      });
+  };
+
+  // Handle Delete (Eksekusi Penghapusan)
+  const handleConfirmDelete = () => {
+      startTransition(async () => {
+          const res = await deleteCourse(courseId);
+          
+          if (res.success) {
+              // Tutup modal dulu (opsional karena kita akan redirect)
+              setShowDeleteModal(false);
+              // Redirect ke dashboard manajemen
+              router.push("/manage"); 
+              router.refresh();
+          } else {
+              alert("Gagal menghapus mata kuliah.");
+              setShowDeleteModal(false);
+          }
+      });
+  };
+
+  if (loading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-500" /></div>;
 
   return (
-    <Card className="shadow-md">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-xl font-semibold">Kelola Materi: {course.title}</CardTitle>
-        <Button className="bg-green-600 hover:bg-green-700">
-          <Plus className="h-4 w-4 mr-2" />
-          Tambah Materi Baru
-        </Button>
-      </CardHeader>
-      <CardContent className="px-4"> 
-        {course.materials.length > 0 ? (
-          <div className="divide-y divide-gray-200">
-            {course.materials.map(material => (
-              <EditableMaterialItem key={material.id} material={material} />
-            ))}
+    <div className="space-y-6 max-w-4xl">
+      
+      {/* Kartu Informasi Umum */}
+      <Card className="shadow-md">
+        <CardHeader>
+          <CardTitle>Pengaturan Umum</CardTitle>
+          <CardDescription>Ubah detail dasar mata kuliah Anda.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Judul Mata Kuliah</label>
+                <Input 
+                    value={formData.title} 
+                    onChange={(e) => setFormData({...formData, title: e.target.value})}
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Semester</label>
+                <Input 
+                    value={formData.semester} 
+                    onChange={(e) => setFormData({...formData, semester: e.target.value})}
+                />
+            </div>
           </div>
-        ) : (
-          <p className="text-center text-gray-500 py-4">
-            Belum ada materi. Klik "Tambah Materi Baru" untuk memulai.
-          </p>
-        )}
-      </CardContent>
-    </Card>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi Singkat</label>
+            <textarea 
+                className="w-full min-h-[80px] p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">URL Cover Image</label>
+            <Input 
+                value={formData.coverImage} 
+                onChange={(e) => setFormData({...formData, coverImage: e.target.value})}
+                placeholder="https://..."
+            />
+          </div>
+
+          <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+            <label className="block text-sm font-bold text-blue-800 mb-1">Kunci Pendaftaran (Enrollment Key)</label>
+            <Input 
+                value={formData.enrollmentKey} 
+                onChange={(e) => setFormData({...formData, enrollmentKey: e.target.value})}
+                placeholder="Kosongkan agar pendaftaran terbuka untuk umum"
+                type="text"
+                className="bg-white"
+            />
+            <p className="text-xs text-blue-600 mt-1">
+                Jika diisi, mahasiswa harus memasukkan kode ini saat mendaftar.
+            </p>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <Button onClick={handleSave} disabled={isPending}>
+                {isPending ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <Save className="mr-2 h-4 w-4" />}
+                Simpan Perubahan
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Kartu Zona Berbahaya */}
+      <Card className="shadow-md border-red-200 bg-red-50/30">
+        <CardHeader>
+          <CardTitle className="flex items-center text-red-600">
+            <AlertCircle className="h-5 w-5 mr-2" />
+            Zona Berbahaya
+          </CardTitle>
+          <CardDescription>Tindakan ini bersifat permanen dan tidak dapat dibatalkan.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col md:flex-row justify-between md:items-center space-y-4 md:space-y-0">
+          <div>
+            <h4 className="font-semibold text-gray-900">Hapus Mata Kuliah</h4>
+            <p className="text-sm text-gray-600">
+              Menghapus kelas ini beserta seluruh materi, tugas, dan nilai mahasiswa di dalamnya.
+            </p>
+          </div>
+          
+          <Button 
+            variant="ghost" 
+            className="bg-white text-red-600 border border-red-200 hover:bg-red-600 hover:text-white transition-colors"
+            onClick={() => setShowDeleteModal(true)} // <-- 2. Buka Modal saat diklik
+            disabled={isPending}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Hapus Permanen
+          </Button>
+          
+        </CardContent>
+      </Card>
+
+      {/* --- 3. KOMPONEN MODAL --- */}
+      <ConfirmModal 
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleConfirmDelete}
+        isLoading={isPending}
+        title="HAPUS MATA KULIAH?" // Judul Huruf Besar agar lebih waspada
+        description="PERINGATAN: Apakah Anda yakin ingin menghapus mata kuliah ini? Semua data materi, tugas, kuis, dan nilai mahasiswa akan hilang selamanya."
+      />
+
+    </div>
   );
 }
