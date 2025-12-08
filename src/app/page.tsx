@@ -1,36 +1,40 @@
 "use client"; 
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link'; // <-- 1. Pastikan Link diimpor
+import React, { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation'; // <-- 1. Kembalikan useRouter
+import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { GraduationCap, Mail, Lock } from 'lucide-react';
-// (Kita menggunakan <input> biasa di file ini, bukan komponen <Input>)
+import { GraduationCap, Mail, Lock, Loader2 } from 'lucide-react';
+import { login } from '@/actions/auth-actions';
 
 export default function LoginPage() {
-  const router = useRouter(); 
+  const router = useRouter(); // <-- 2. Init router
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  
+  const [error, setError] = useState<string | undefined>('');
+  const [isPending, startTransition] = useTransition();
 
-  // Fungsi "dummy" login
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault(); 
-    
-    let roleToSet: 'mahasiswa' | 'dosen' | 'admin' = 'mahasiswa'; 
+    setError('');
 
-    if (email.includes('siti@student')) {
-      roleToSet = 'mahasiswa';
-    } else if (email.includes('budi@dosen')) {
-      roleToSet = 'dosen';
-    } else if (email.includes('admin@edusphere')) {
-      roleToSet = 'admin';
-    } else {
-      roleToSet = 'mahasiswa';
-    }
-    
-    localStorage.setItem('edusphere-role', roleToSet);
-    router.push('/dashboard'); 
+    startTransition(async () => {
+      // 3. Panggil action login
+      const data = await login({ email, password });
+
+      if (data?.error) {
+        setError(data.error);
+      } else if (data?.success) {
+        // 4. JIKA SUKSES:
+        // Refresh router untuk update Session Context
+        //router.refresh(); 
+        // Redirect manual ke dashboard
+        //router.push("/dashboard");
+        window.location.href = "/dashboard";
+      }
+    });
   };
 
   return (
@@ -47,18 +51,15 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
-            {/* Input Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Email</label>
               <div className="relative mt-1">
                 <Mail className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
-                  id="email"
+                  disabled={isPending}
                   type="email"
                   required
-                  className="pl-10 pr-4 py-2 w-full bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  className="pl-10 pr-4 py-2 w-full bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 disabled:opacity-50"
                   placeholder="nama@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -66,18 +67,15 @@ export default function LoginPage() {
               </div>
             </div>
             
-            {/* Input Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Password</label>
               <div className="relative mt-1">
                 <Lock className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
-                  id="password"
+                  disabled={isPending}
                   type="password"
                   required
-                  className="pl-10 pr-4 py-2 w-full bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  className="pl-10 pr-4 py-2 w-full bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 disabled:opacity-50"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -85,29 +83,13 @@ export default function LoginPage() {
               </div>
             </div>
             
-            <Button type="submit" className="w-full text-lg font-semibold py-3">
-              Login
+            {error && <div className="p-3 bg-red-100 text-red-500 text-sm rounded-md">{error}</div>}
+
+            <Button type="submit" disabled={isPending} className="w-full text-lg font-semibold py-3 flex items-center justify-center">
+              {isPending ? <Loader2 className="animate-spin" /> : 'Login'}
             </Button>
           </form>
 
-          {/* Info Akun Demo */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg border">
-            <h4 className="font-semibold text-gray-800">Demo Accounts:</h4>
-            <p className="text-sm text-gray-600 mt-2">
-              <strong>Mahasiswa:</strong> siti@student.edusphere.com
-            </p>
-            <p className="text-sm text-gray-600">
-              <strong>Dosen:</strong> budi@dosen.edusphere.com
-            </p>
-            <p className="text-sm text-gray-600">
-              <strong>Admin:</strong> admin@edusphere.com
-            </p>
-            <p className="text-sm text-gray-600 mt-1">
-              <strong>Password:</strong> (bebas)
-            </p>
-          </div>
-          
-          {/* --- 2. TAMBAHKAN BLOK INI --- */}
           <div className="text-center mt-4">
             <p className="text-sm text-gray-600">
               Belum punya akun?{' '}
@@ -116,7 +98,6 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
-          {/* --- AKHIR TAMBAHAN --- */}
 
         </CardContent>
       </Card>

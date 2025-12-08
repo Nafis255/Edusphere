@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/contexts/ThemeContext"; // Impor provider kita
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { RoleProvider } from "@/contexts/RoleContext";
+import { SessionProvider } from "next-auth/react"; // <-- 1. Import ini
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,10 +21,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} bg-gray-50`}>
-        {/* Bungkus 'children' dengan ThemeProvider */}
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+        {/* 2. Bungkus RoleProvider dengan SessionProvider */}
+        <SessionProvider>
+          <ThemeProvider>
+            <RoleProvider>
+              {children}
+              <Toaster position="top-center" richColors />
+            </RoleProvider>
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );
