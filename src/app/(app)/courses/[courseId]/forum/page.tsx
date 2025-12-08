@@ -1,55 +1,67 @@
-"use client"; // Karena kita akan filter
+"use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { MessageSquare, Plus } from 'lucide-react';
-import { mockForumList } from '@/data/mockData'; // <-- Impor daftar forum global
-import ThreadRow from '@/components/forum/ThreadRow'; // <-- Impor komponen
+import { MessageSquare, Plus, Loader2 } from 'lucide-react';
+import { getThreads } from '@/actions/forum-actions';
+import ThreadRow from '@/components/forum/ThreadRow'; // Komponen yang sudah ada
 
-export default function GlobalForumPage() {
-  // Untuk saat ini, kita tampilkan semua thread dari mockForumList
-  // Kita perlu menebak courseId untuk link-nya (ini limitasi mock data)
-  const allThreads = mockForumList;
+export default function ForumListPage() {
+  const params = useParams();
+  const courseId = params.courseId as string;
   
+  const [threads, setThreads] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if(!courseId) return;
+    async function loadData() {
+        const data = await getThreads(courseId);
+        // Mapping agar sesuai dengan props ThreadRow yang lama
+        const mapped = data.map((t: any) => ({
+            ...t,
+            repliesCount: t._count.replies,
+            createdAt: new Date(t.createdAt).toLocaleDateString()
+        }));
+        setThreads(mapped);
+        setLoading(false);
+    }
+    loadData();
+  }, [courseId]);
+
+  if (loading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-500" /></div>;
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between md:items-center space-y-4 md:space-y-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Forum Global</h1>
-          <p className="text-gray-600">Semua diskusi dari mata kuliah Anda</p>
+          <h1 className="text-2xl font-bold text-gray-900">Forum Diskusi</h1>
+          <p className="text-gray-600">Diskusikan topik pembelajaran dengan dosen dan mahasiswa lain</p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Buat Thread Baru
-        </Button>
+        <Link href={`/courses/${courseId}/forum/create`}>
+            <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Buat Thread Baru
+            </Button>
+        </Link>
       </div>
-
-      {/* Search Bar */}
-      <Card className="shadow-sm">
-        <CardContent className="p-4">
-          <div className="relative">
-            <MessageSquare className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Cari di semua diskusi..."
-              className="pl-10 pr-4 py-2 w-full bg-gray-50 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Daftar Thread */}
       <div className="space-y-4">
-        {allThreads.length > 0 ? (
-          allThreads.map(thread => (
-            <ThreadRow key={thread.id} courseId="web-lanjut" thread={thread} />
+        {threads.length > 0 ? (
+          threads.map(thread => (
+            <ThreadRow key={thread.id} courseId={courseId} thread={thread} />
           ))
         ) : (
           <Card>
-            <CardContent className="p-8">
-              <p className="text-center text-gray-500">Belum ada diskusi di forum ini.</p>
+            <CardContent className="p-10 text-center">
+              <MessageSquare className="h-10 w-10 mx-auto text-gray-300 mb-3" />
+              <p className="text-gray-500">Belum ada diskusi di forum ini.</p>
+              <p className="text-sm text-gray-400">Jadilah yang pertama memulai topik!</p>
             </CardContent>
           </Card>
         )}

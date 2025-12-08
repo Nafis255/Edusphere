@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Course } from "@/lib/types"; 
+import { Course } from "@/lib/types"; // Impor tipe data kita
 
 interface CourseProgressCardProps {
   course: Course;

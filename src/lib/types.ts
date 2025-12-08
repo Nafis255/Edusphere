@@ -1,9 +1,11 @@
+// src/lib/types.ts
+
 // Tipe untuk pengguna (user)
 export type User = {
   id: string;
   name: string;
   email: string;
-  avatarUrl: string; 
+  avatarUrl: string; // URL ke gambar avatar
   role: 'Mahasiswa' | 'Dosen' | 'Admin';
   academicId: string;
 };
@@ -11,13 +13,13 @@ export type User = {
 // Tipe untuk materi (konten)
 export type Material = {
   id: string;
-  type: 'Video' | 'PDF' | 'PPT' | 'Word' | 'Text'; 
+  type: 'Video' | 'PDF' | 'PPT' | 'Word' | 'Text'; // <-- DIPERBARUI
   title: string;
-  duration?: string; // "30 menit" (opsional)
-  videoUrl?: string; // YouTube embed URL
-  pdfUrl?: string; // URL ke file PDF dummy
-  documentUrl?: string;  // untuk Word & PPT
-  textContent?: string;  // untuk Text
+  duration?: string; // e.g., "30 menit" (opsional)
+  videoUrl?: string; // e.g., YouTube embed URL
+  pdfUrl?: string; // e.g., URL ke file PDF dummy
+  documentUrl?: string;  // <-- BARU: untuk Word & PPT
+  textContent?: string;  // <-- BARU: untuk Text
   description: string;
   isCompleted: boolean;
   uploadedAt: string;
@@ -46,7 +48,7 @@ export type ForumThread = {
   title: string;
   content: string;
   author: User;
-  createdAt: string; // "2 jam yang lalu"
+  createdAt: string; // e.g., "2 jam yang lalu"
   repliesCount: number;
   likesCount: number;
   replies: ForumReply[];
@@ -67,9 +69,9 @@ export type Course = {
   title: string;
   instructorName: string;
   imageUrl: string;
-  coverImage: string; 
-  semester: string;   
-  studentCount: number; 
+  coverImage: string; // <--- BARU (Banner)
+  semester: string;   // <--- BARU
+  studentCount: number; // <--- BARU
   progress: number;
   materials: Material[];
   quizzes: Quiz[];
@@ -99,7 +101,7 @@ export type Notification = {
   id: string;
   title: string;
   description: string;
-  timestamp: string; // "10 menit yang lalu"
+  timestamp: string; // e.g., "10 menit yang lalu"
   isRead: boolean;
 };
 
@@ -108,5 +110,5 @@ export type Assignment = {
   id: string;
   title: string;
   description: string;
-  dueDate: string; // Tanggal deadline, "2025-11-20T23:59"
+  dueDate: string; // Tanggal deadline, e.g., "2025-11-20T23:59"
 };

@@ -1,20 +1,31 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { ClipboardCheck, Clock, ChevronRight } from 'lucide-react';
+import { ClipboardCheck, Clock, ChevronRight, Loader2 } from 'lucide-react';
+import { getStudentQuizzes } from '@/actions/student-quiz-actions';
 
-import { mockCourses } from '@/data/mockData';
-
-export default function QuizListPage() {
+export default function StudentQuizListPage() {
   const params = useParams();
   const courseId = params.courseId as string;
-  const course = mockCourses.find(c => c.id === courseId);
+  
+  const [quizzes, setQuizzes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  if (!course) return <div>Mata Kuliah tidak ditemukan.</div>;
+  useEffect(() => {
+    if(!courseId) return;
+    async function loadData() {
+        const data = await getStudentQuizzes(courseId);
+        setQuizzes(data);
+        setLoading(false);
+    }
+    loadData();
+  }, [courseId]);
+
+  if (loading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-500" /></div>;
 
   return (
     <Card className="shadow-md">
@@ -22,14 +33,13 @@ export default function QuizListPage() {
         <CardTitle className="text-xl font-semibold">Daftar Kuis</CardTitle>
       </CardHeader>
       <CardContent className="px-4">
-        {course.quizzes.length > 0 ? (
+        {quizzes.length > 0 ? (
           <div className="space-y-4">
-            {course.quizzes.map((quiz, index) => (
+            {quizzes.map((quiz) => (
               <div 
                 key={quiz.id}
-                className="border border-gray-200 rounded-lg p-4 flex flex-col md:flex-row md:items-center justify-between hover:bg-gray-100 transition-colors"
+                className="border border-gray-200 rounded-lg p-4 flex flex-col md:flex-row md:items-center justify-between hover:bg-gray-50 transition-colors"
               >
-                {/* Info Kiri */}
                 <div className="flex items-start space-x-4 mb-4 md:mb-0">
                   <div className="p-3 bg-blue-100 rounded-full">
                     <ClipboardCheck className="h-6 w-6 text-blue-600" />
@@ -39,14 +49,13 @@ export default function QuizListPage() {
                     <div className="flex items-center text-sm text-gray-500 mt-1 space-x-4">
                       <span className="flex items-center">
                         <Clock className="h-4 w-4 mr-1" />
-                        {quiz.duration}
+                        {quiz.duration} Menit
                       </span>
                       <span>{quiz.questions.length} Soal</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Tombol Kanan */}
                 <Link href={`/courses/${courseId}/kuis/${quiz.id}`}>
                   <Button className="w-full md:w-auto">
                     Mulai Kuis

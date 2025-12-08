@@ -1,13 +1,32 @@
 "use client"; 
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Users, GraduationCap, Book } from 'lucide-react';
-import { mockAdminStats } from '@/data/mockData';
+import { Users, GraduationCap, Book, Loader2 } from 'lucide-react';
 import StatCard from '@/components/dashboard/StatCard';
+import { getAdminStats } from '@/actions/admin-actions'; // Import action
 
 export default function AdminDashboard() {
-  const stats = mockAdminStats;
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalDosen: 0,
+    totalMahasiswa: 0,
+    totalCourses: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+        const data = await getAdminStats();
+        if (data) {
+            setStats(data);
+        }
+        setLoading(false);
+    }
+    loadData();
+  }, []);
+
+  if (loading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-500" /></div>;
 
   return (
     <div className="space-y-6">
@@ -46,15 +65,15 @@ export default function AdminDashboard() {
         />
       </div>
 
-      {/* Nanti di sini bisa ditambahkan chart aktivitas platform */}
       <Card className="shadow-md">
         <CardHeader>
-          <CardTitle>Aktivitas Platform</CardTitle>
+          <CardTitle>System Status</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-600">
-            Chart aktivitas pengguna baru dan pembuatan mata kuliah akan tampil di sini.
-          </p>
+          <div className="flex items-center gap-2">
+            <span className="h-3 w-3 bg-green-500 rounded-full animate-pulse"></span>
+            <p className="text-green-700 font-medium">Semua sistem berjalan normal.</p>
+          </div>
         </CardContent>
       </Card>
     </div>

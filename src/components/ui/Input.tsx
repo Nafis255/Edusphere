@@ -10,6 +10,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <input
         type={type}
+        // Style dasar untuk input
         className={twMerge(
           'flex h-10 w-full rounded-md border border-gray-300',
           'bg-white py-2 text-sm',

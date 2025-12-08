@@ -5,7 +5,7 @@ type InfoItem = {
   id: string;
   title: string;
   subtitle: string;
-  badge?: string; // "2 hari lagi"
+  badge?: string; // e.g., "2 hari lagi"
 };
 
 interface InfoCardProps {
@@ -26,10 +26,15 @@ export default function InfoCard({ title, items }: InfoCardProps) {
         <CardTitle className="text-xl font-semibold text-gray-900">{title}</CardTitle>
       </CardHeader>
       
+      {/* Perubahan di CardContent dan div di bawahnya.
+        - CardContent diberi className 'pt-0' agar padding atasnya 0.
+        - div pembungkus list diubah dari 'space-y-4' menjadi 'divide-y'.
+      */}
       <CardContent className="pt-0">
         <div className="divide-y divide-gray-300">
           {items.map((item) => (
             
+            // Setiap item diberi padding vertikal 'py-4'
             <div key={item.id} className="flex justify-between items-start py-4"> 
               <div>
                 <p className="font-medium text-gray-800">{item.title}</p>

@@ -6,11 +6,13 @@ interface StatCardProps {
   title: string;
   value: string | number;
   icon: LucideIcon;
-  color: string; 
+  color: string; // Warna ikon, e.g., 'text-blue-500'
 }
 
 export default function StatCard({ title, value, icon: Icon, color }: StatCardProps) {
-  const bgColorClass = color.replace('text-', 'bg-').replace('500', '100'); 
+  // Kita ambil warna dasar dari class 'text-blue-500' untuk background opacity
+  // Trik sederhana: ganti 'text-' jadi 'bg-' dan tambah opacity
+  const bgColorClass = color.replace('text-', 'bg-').replace('500', '100'); // e.g., bg-blue-100
 
 
   return (

@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Award, Check, X, ArrowLeft } from 'lucide-react';
-import { mockCourses } from '@/data/mockData';
 
 export default function QuizResultPage() {
   const params = useParams();

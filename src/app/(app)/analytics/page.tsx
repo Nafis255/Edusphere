@@ -1,15 +1,29 @@
-import React from 'react';
+"use client";
+
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import SimpleBarChart from '@/components/charts/SimpleBarChart';
-import { mockGlobalAnalytics, mockAnalyticsStats } from '@/data/mockData'; 
-import StatCard from '@/components/dashboard/StatCard'; 
-import { Award, Target, Clock, PieChart } from 'lucide-react'; 
+import StatCard from '@/components/dashboard/StatCard';
+import { Award, Target, CheckCircle, PieChart, Loader2 } from 'lucide-react';
+import { getStudentAnalytics } from '@/actions/analytics-actions'; // Import Action
 
 export default function AnalyticsPage() {
-  const { courseProgressData, quizScoreData, studyTimeData } = mockGlobalAnalytics;
-  const stats = mockAnalyticsStats; 
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const formattedStudyTimeData = studyTimeData.map(d => ({ name: d.day, Waktu: d.hours }));
+  useEffect(() => {
+    async function loadData() {
+        const res = await getStudentAnalytics();
+        setData(res);
+        setLoading(false);
+    }
+    loadData();
+  }, []);
+
+  if (loading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-500" /></div>;
+  if (!data) return <div className="text-center py-20">Gagal memuat data analitik.</div>;
+
+  const { stats, courseProgressData, quizScoreData } = data;
 
   return (
     <div className="space-y-6">
@@ -17,83 +31,80 @@ export default function AnalyticsPage() {
         Analytics
       </h1>
       <p className="text-lg text-gray-600">
-        Ringkasan progres belajar Anda secara keseluruhan.
+        Ringkasan progres belajar dan pencapaian Anda.
       </p>
 
+      {/* 1. GRID STAT CARD */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
-          title="Completed Courses" 
+          title="Kursus Selesai" 
           value={stats.completedCourses} 
           icon={Award} 
           color="text-blue-500"
         />
         <StatCard 
-          title="In Progress" 
+          title="Sedang Berjalan" 
           value={stats.inProgressCourses} 
           icon={Target} 
           color="text-green-500"
         />
+        {/* Kita ganti "Study Hours" dengan "Materi Selesai" karena lebih akurat */}
         <StatCard 
-          title="Total Study Hours" 
-          value={`${stats.totalStudyHours}h`} 
-          icon={Clock} 
+          title="Materi Diselesaikan" 
+          value={stats.totalMaterialsDone} 
+          icon={CheckCircle} 
           color="text-cyan-500"
         />
         <StatCard 
-          title="Average Progress" 
+          title="Rata-rata Progress" 
           value={`${stats.averageProgress}%`} 
           icon={PieChart} 
           color="text-purple-500"
         />
       </div>
 
+      {/* 2. CHARTS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Chart 1: Progres Mata Kuliah */}
+        
+        {/* Chart 1: Progres per Mata Kuliah */}
         <Card className="shadow-md">
           <CardHeader>
             <CardTitle>Progres Mata Kuliah</CardTitle>
             <CardDescription>Persentase penyelesaian setiap mata kuliah.</CardDescription>
           </CardHeader>
           <CardContent>
-            <SimpleBarChart 
-              data={courseProgressData} 
-              barKey="progress" 
-              fillColor="#3b82f6" // biru
-            />
+            {courseProgressData.length > 0 ? (
+                <SimpleBarChart 
+                  data={courseProgressData} 
+                  barKey="progress" 
+                  fillColor="#3b82f6" // biru
+                />
+            ) : (
+                <p className="text-center text-gray-400 py-10">Belum ada data kursus.</p>
+            )}
           </CardContent>
         </Card>
         
-        {/* Chart 2: Waktu Belajar */}
+        {/* Chart 2: Riwayat Nilai Kuis (Menggantikan Study Time) */}
         <Card className="shadow-md">
           <CardHeader>
-            <CardTitle>Waktu Belajar (Jam)</CardTitle>
-            <CardDescription>Total jam belajar Anda 7 hari terakhir.</CardDescription>
+            <CardTitle>Riwayat Nilai Kuis</CardTitle>
+            <CardDescription>Skor perolehan pada 5 kuis terakhir.</CardDescription>
           </CardHeader>
           <CardContent>
-            <SimpleBarChart 
-              data={formattedStudyTimeData} 
-              barKey="Waktu" 
-              fillColor="#10b981" // hijau
-            />
+            {quizScoreData.length > 0 ? (
+                <SimpleBarChart 
+                  data={quizScoreData} 
+                  barKey="score" 
+                  fillColor="#f59e0b" // kuning/orange
+                />
+            ) : (
+                <p className="text-center text-gray-400 py-10">Belum ada kuis yang dikerjakan.</p>
+            )}
           </CardContent>
         </Card>
-      </div>
-      
-      {/* Chart 3: Skor Kuis */}
-      <Card className="shadow-md">
-        <CardHeader>
-          <CardTitle>Skor Kuis</CardTitle>
-          <CardDescription>Skor rata-rata kuis yang telah Anda kerjakan.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <SimpleBarChart 
-              data={quizScoreData} 
-              barKey="score" 
-              fillColor="#f59e0b" // kuning
-            />
-        </CardContent>
-      </Card>
 
+      </div>
     </div>
   );
 }
