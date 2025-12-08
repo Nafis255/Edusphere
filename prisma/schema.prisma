@@ -1,0 +1,263 @@
+// 1. KONFIGURASI KONEKSI (Kembali ke Standar Stabil)
+generator client {
+  provider = "prisma-client-js"
+  // "native" allows it to work on your local computer
+  // "rhel-openssl-3.0.x" allows it to work on Vercel's servers
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  // Kita kembalikan URL ke sini agar kompatibel dengan Prisma v5
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// 2. ENUM
+enum Role {
+  MAHASISWA
+  DOSEN
+  ADMIN
+}
+
+enum MaterialType {
+  VIDEO
+  PDF
+  PPT
+  WORD
+  TEXT
+}
+
+enum QuestionType {
+  PILIHAN_GANDA
+  BENAR_SALAH
+}
+
+// 3. MODEL
+
+// Tabel User
+model User {
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  password    String   
+  role        Role     @default(MAHASISWA)
+  academicId  String?  @unique
+  avatarUrl   String?
+  bio         String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  emailVerified DateTime?
+  enableCourseNotif Boolean @default(true)
+
+  coursesOwned    Course[]      @relation("InstructorCourses")
+  enrollments     Enrollment[]
+  forumThreads    Thread[]
+  forumReplies    Reply[]
+  submissions     Submission[]
+  quizAttempts    QuizAttempt[]
+  materialProgress MaterialProgress[]
+  notifications Notification[]
+}
+
+// Tabel Course
+model Course {
+  id            String   @id @default(uuid())
+  title         String
+  description   String?
+  coverImage    String?
+  semester      String?
+  enrollmentKey String?
+  
+  instructorId  String
+  instructor    User     @relation("InstructorCourses", fields: [instructorId], references: [id])
+
+  materials     Material[]
+  quizzes       Quiz[]
+  assignments   Assignment[]
+  forumThreads  Thread[]
+  enrollments   Enrollment[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Tabel Enrollment
+model Enrollment {
+  id        String   @id @default(uuid())
+  studentId String
+  courseId  String
+  progress  Int      @default(0)
+  enrolledAt DateTime @default(now())
+  lastAccessedAt DateTime @default(now())
+
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId])
+}
+
+// Tabel Material
+model Material {
+  id          String       @id @default(uuid())
+  title       String
+  type        MaterialType
+  description String?
+  
+  videoUrl    String?
+  fileUrl     String?
+  textContent String?
+
+  isPublished Boolean      @default(true)
+  
+  courseId    String
+  course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime     @default(now())
+
+  progressRecords  MaterialProgress[]
+}
+
+// Tabel Quiz
+model Quiz {
+  id          String   @id @default(uuid())
+  title       String
+  duration    Int      
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  questions   Question[]
+
+  createdAt   DateTime @default(now())
+  attempts    QuizAttempt[]
+}
+
+// Tabel Question
+model Question {
+  id            String       @id @default(uuid())
+  text          String
+  type          QuestionType
+  options       String[]
+  correctAnswer String
+  
+  quizId        String
+  quiz          Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+}
+
+// Tabel Assignment
+model Assignment {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  dueDate     DateTime
+  
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  submissions Submission[]
+}
+
+// Tabel Submission
+model Submission {
+  id           String   @id @default(uuid())
+  fileUrl      String?
+  linkUrl      String?
+  submittedAt  DateTime @default(now())
+  grade        Int?
+  
+  studentId    String
+  student      User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  assignmentId String
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+}
+
+// Tabel Thread
+model Thread {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  replies   Reply[]
+  likes     Int      @default(0)
+}
+
+// Tabel Reply
+model Reply {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  threadId  String
+  thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  
+  likes     Int      @default(0)
+}
+
+model QuizAttempt {
+  id          String   @id @default(uuid())
+  score       Int
+  correct     Int
+  total       Int
+  completedAt DateTime @default(now())
+  
+  studentId   String
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  quizId      String
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, quizId])
+}
+
+model MaterialProgress {
+  id          String   @id @default(uuid())
+  isCompleted Boolean  @default(false)
+  completedAt DateTime @default(now())
+
+  studentId   String
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  materialId  String
+  material    Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  // Constraint: Satu mahasiswa hanya punya satu record progress per materi
+  @@unique([studentId, materialId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  link      String?  // Link tujuan saat diklik (misal ke halaman nilai)
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   // Angka OTP (misal: "123456")
+  expires   DateTime // Kapan OTP hangus
+
+  @@unique([email, token]) // Satu email bisa punya token unik
+}
+
+model SystemConfig {
+  id                String  @id @default("global") // ID tetap agar mudah diakses
+  allowRegistration Boolean @default(true)         // Pengaturan Buka/Tutup Pendaftaran
+  maintenanceMode   Boolean @default(false)        // Pengaturan Maintenance
+}
